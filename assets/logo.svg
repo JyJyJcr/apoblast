@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="128" viewBox="-160 -64 320 128">
+    <style>
+        #abbreviation {
+            font-family: Georgia;
+            font-size: 37px;
+            fill: #30c810;
+        }
+
+        #full-name {
+            font-family: Georgia;
+            font-size: 6.5px;
+            fill: #30c810;
+        }
+
+        #full-name-sub {
+            font-style: italic;
+        }
+    </style>
+    <g>
+        <text x="140" y="0" stroke="none" dominant-baseline="central" text-anchor="end" id="abbreviation">APOBLAST</text>
+        <text x="138" y="20" stroke="none" dominant-baseline="central" text-anchor="end" id="full-name">
+            <tspan id="full-name-sub">A Priori</tspan>
+            Operator-Based Linear Algorithm for Symmetric Terms
+        </text>
+    </g>
+    <g transform="translate(-100 0)">
+        <g fill="#715b39">
+            <path d="M 40,-5 l -40,10 v 10 Z" />
+            <path d="M -40,-5 l 40,10 v 10 Z" />
+            <path d="M 0,-45 l 10,90 h -20 Z" />
+        </g>
+        <g transform="translate(15 -25)">
+            <path d="M  -6 -8 l 21,28 c 0,-5 -10,-18 -13,-22 l -6,-8 Z" fill="#b8b8b8" />
+        </g>
+
+        <path d="M 35,-30 a 50,50 0 0 0 -32,30 a  3,3 0 0 0 4,4 a 50,50 0 0 1 28,-34 Z" fill="#30c810" />
+
+        <g transform="translate(15 -25)">
+            <circle cx="-10" cy="-13" r="7" stroke="#b8b8b8" stroke-width="2" fill="none" />
+            <circle cx="10" cy="-13" r="7" stroke="#b8b8b8" stroke-width="2" fill="none" />
+            <path d="M 6 -8 l -21,28 c 0,-5 10,-18 13,-22 l 6,-8 Z" fill="#b8b8b8" />
+        </g>
+    </g>
+</svg>
