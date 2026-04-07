@@ -1,6 +1,7 @@
 import sympy
 from apoblast import Model, Library, Transformation,Constrainer, collect_follower, collect_follower_raw
 from IPython.display import display
+from utils import listdorder, listorder
 
 # define coordinate
 x=sympy.Symbol('x')
@@ -39,21 +40,6 @@ monoterms=[
     (sympy.diff(uy(x,y),y,2),2),
 
 ]
-
-
-def listorder(monoterms,order,dorder,order_max,dorder_max,filter=(lambda o,d: True)):
-    if order_max < order or dorder_max < dorder:
-        return []
-    elif len(monoterms) == 0:
-        if filter(order,dorder):
-            return [1]
-        else:
-            return []
-    else:
-        arr=[]
-        for i in range(0,order_max-order+1):
-            arr+=map(lambda t: (monoterms[0][0]**i)*t,listorder(monoterms[1:],order+i,dorder+i*monoterms[0][1],order_max,dorder_max,filter=filter))
-        return arr
 
 
 # 110
