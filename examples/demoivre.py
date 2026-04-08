@@ -6,10 +6,9 @@ from IPython.display import display
 x=sympy.Symbol('x')
 y=sympy.Symbol('y')
 
-
-#define field
-u=sympy.Function('u')
-v=sympy.Function('v')
+#define field (no field in this case)
+# u=sympy.Function('u')
+# v=sympy.Function('v')
 
 # define model
 m=Model(
@@ -22,27 +21,8 @@ m=Model(
     ]
 )
 
-monoterms=[
-    x,y,
-    # u(x,y),
-    # v(x,y),
-    # sympy.diff(u(x,y),x),
-    # sympy.diff(u(x,y),y),
-    # sympy.diff(v(x,y),x),
-    # sympy.diff(v(x,y),y),
-    # sympy.sin(u(x,y)),
-    # sympy.cos(u(x,y)),
-    # sympy.sin(v(x,y)),
-    # sympy.cos(v(x,y)),
-    # sympy.diff(u(x,y),x,2),
-    # sympy.diff(u(x,y),x,y),
-    # sympy.diff(u(x,y),y,2),
-    # sympy.diff(v(x,y),x,2),
-    # sympy.diff(v(x,y),x,y),
-    # sympy.diff(v(x,y),y,2),
-]
-
-
+# define library
+monoterms=[x,y]
 def listorder(monoterms,order):
     if len(monoterms) == 0:
         return [1]
@@ -51,18 +31,12 @@ def listorder(monoterms,order):
         for i in range(0,order+1):
             arr+=map(lambda t: (monoterms[0]**i)*t,listorder(monoterms[1:],order-i))
         return arr
-
-#print(listorder(monoterms,3))
-
-# l=Library(m,
-#     map(lambda t: t[0]*t[1],itertools.product(poly, diff))
-# )
 l=Library(m,listorder(monoterms,10))
 
+# define transformations
 
-# define transformation
-
-# y axis reflection
+# reflections
+# x reflection
 trrefl=Transformation(m,
     (
         -x,
@@ -72,8 +46,7 @@ trrefl=Transformation(m,
        # v(x,y)
     )
 )
-
-# x axis reflection
+# y reflection
 trrefl2=Transformation(m,
     (
         x,
@@ -83,6 +56,7 @@ trrefl2=Transformation(m,
        # -v(x,y)
     )
 )
+# 45 degree rotation
 trrefl3=Transformation(m,
     (
         y,
@@ -93,12 +67,7 @@ trrefl3=Transformation(m,
     )
 )
 
-
-#trrefl.apply(sympy.diff(v(x,y),x))
-
-#t=TransformationMatrix(l,trrefl)
-#t.mat
-# # rotation
+# rotation
 def trrot(th):
     return Transformation(m,
         (
@@ -110,11 +79,11 @@ def trrot(th):
         )
     )
 
+# rotation with exponential form, which results in a longer computation time. do not use.
 def expsin(th):
     return (sympy.exp(sympy.I*th)-sympy.exp(-sympy.I*th))/2*sympy.I
 def expcos(th):
     return (sympy.exp(sympy.I*th)+sympy.exp(-sympy.I*th))/2
-
 def exptrrot(th):
     return Transformation(m,
         (
@@ -126,20 +95,9 @@ def exptrrot(th):
         )
     )
 
-# # due to the computation power limit, need to choose rotation angles carefully: they are better to be rational * pi
-
-
-# lhs=[u(x,y),v(x,y)]
-# lhs_library=Library(m,(u(x,y),v(x,y)))
-
+# modern way to define rotation
 th=sympy.Symbol("th")
-
-
-
-lhs=[sympy.Number(1)]
-lhs_library=Library(m,[sympy.Number(1)])
-
-rot=Transformation(m,
+trrot_free=Transformation(m,
         [
             sympy.cos(th)*x+sympy.sin(th)*y,
             sympy.cos(th)*y-sympy.sin(th)*x
@@ -150,44 +108,24 @@ rot=Transformation(m,
         parameter=[th]
     )
 
-X=sympy.Symbol("X")
-Y=sympy.Symbol("Y")
+# define LHS
+lhs=[sympy.Number(1)]
+# define LHS library
+lhs_library=Library(m,[sympy.Number(1)])
 
-shift=Transformation(m,
-        [
-            x+X,
-            y+Y,
-        ],[
-       #     u(x,y),
-       #     v(x,y)
-        ],
-        parameter=[X,Y]
-    )
-
+# execute alogirithm
 follower=collect_follower(lhs,
     l,
     # Constrainer(trrefl),
-    Constrainer(trrefl2),
+    Constrainer(trrefl2), # notice: with 5-fold rotational symmetry, trrefl and trrefl2 are not same.
     # Constrainer(trrefl3),
     Constrainer(trrot(sympy.pi/5*2)),
-    # Constrainer(trrot(sympy.pi/4)),
-    # Constrainer(trrot(sympy.pi/6)),
-    # Constrainer(trrot(sympy.pi/5)),
-
-
-
-    #Constrainer(shift,parameter_fix=[0,0],differential=X),
-    #Constrainer(shift,parameter_fix=[0,0],differential=Y),
-    #Constrainer(rot,parameter_fix=[0],differential=th),
-    
-    # trrefl3,
-    # trrot(sympy.pi/2),
-    # trrot(sympy.pi/4),
-    # trrot(sympy.pi/6),
-    # trrot(sympy.pi/5),
-    #exptrrot(1),
+    # Constrainer(trrot_free,parameter_fix=[sympy.pi/5*2,]), # modern way
+    # Constrainer(trrot(1)), # old way to express cotinuous rotation
     lhs_library=lhs_library,
     print_progress=True)
-print("follower")
+
+# display results
+# display(follower_mat)
 for f in follower:
    display(sympy.Matrix(f))

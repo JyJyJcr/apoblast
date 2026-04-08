@@ -22,26 +22,27 @@ m=Model(
     ]
 )
 
+# random memo... (about renormalization)
 # 110
 #print(len(listorder(monoterms,0,0,3,1)))
 # 0
 #print(len(listorder(monoterms,0,0,3,1,filter=lambda o,d: False)))
-
 # r => s r
 # t => s^zet t
 # u => s^chi u
 # zet=2
 # chi=0
+
+# define library
 monoterms=listdorder(h(x,y,t),[x,y,t],0,4)
 l=Library(m,listorder(monoterms,0,0,5,4))
 
+# define transformations
 
-# define transformation
-
+# space time shift
 dx=sympy.Symbol('dx')
 dy=sympy.Symbol('dy')
 dt=sympy.Symbol('dt')
-
 trshift=Transformation(m,
     (
         x+dx,
@@ -53,7 +54,7 @@ trshift=Transformation(m,
     parameter=[dx,dy,dt]
 )
 
-# x axis reflection
+# x reflection
 trrefl=Transformation(m,
     (
         -x,
@@ -64,9 +65,8 @@ trrefl=Transformation(m,
     )
 )
 
+# rotation
 th=sympy.Symbol('th')
-
-
 trrot=Transformation(m,
     (
         sympy.cos(th)*x+sympy.sin(th)*y,
@@ -78,10 +78,8 @@ trrot=Transformation(m,
     parameter=[th]
 )
 
-#
-
+# h shift
 dh=sympy.Symbol('dh')
-
 trhshift=Transformation(m,
     (
         x,
@@ -92,6 +90,8 @@ trhshift=Transformation(m,
     ),
     parameter=[dh]
 )
+
+# h reflection
 trhrefl=Transformation(m,
     (
         x,
@@ -102,10 +102,10 @@ trhrefl=Transformation(m,
     )
 )
 
+# statistical tilt symmetry transformation
 ex=sympy.Symbol('ex')
 ey=sympy.Symbol('ey')
 lam=sympy.Symbol('lambda')
-
 trtilt=Transformation(m,
     (
         x-lam*ex*t,
@@ -117,13 +117,16 @@ trtilt=Transformation(m,
     parameter=[ex,ey,lam]
 )
 
+# define LHS
 lhs=[sympy.diff(h(x,y,t),x,2)+sympy.diff(h(x,y,t),y,2)]
+# define LHS library
 lhs_library=Library(m,[sympy.diff(h(x,y,t),x,2),sympy.diff(h(x,y,t),y,2)])
-print("lhs")
 
+# actually, this is enough.
 #lhs=[sympy.Number(1)]
 #lhs_library=Library(m,(sympy.Number(1),))
 
+# execute alogirithm
 follower=collect_follower(lhs,
     l,
     # reflection
@@ -132,8 +135,7 @@ follower=collect_follower(lhs,
     Constrainer(trrot,parameter_fix=[0,],differential=th),
     # space time shift
     Constrainer(trshift,parameter_fix=[0,0,0,],differential=dx),
-    #Constrainer(trshift,parameter_fix=[0,0,0,0,],differential=dy),
-    #Constrainer(trshift,parameter_fix=[0,0,0,0,],differential=dz),
+    #Constrainer(trshift,parameter_fix=[0,0,0,],differential=dy), # = x shift + rotation
     Constrainer(trshift,parameter_fix=[0,0,0,],differential=dt),
     # h shift
     Constrainer(trhshift,parameter_fix=[0,],differential=dh),
@@ -141,13 +143,11 @@ follower=collect_follower(lhs,
     # Constrainer(trhrefl),
     # tilt
     Constrainer(trtilt,parameter_fix=[0,0,1,],differential=ex),
-    #Constrainer(trtilt,parameter_fix=[0,0,0,1,],differential=ey),
-    #Constrainer(trtilt,parameter_fix=[0,0,0,1,],differential=ez),
-    
-    #exptrrot(1),
+    #Constrainer(trtilt,parameter_fix=[0,0,1,],differential=ey), # = x tilt + rotation
     lhs_library=lhs_library,
     print_progress=True)
-# print("follower")
+
+# display results
 # display(follower_mat)
 for f in follower:
     display(sympy.Matrix(f))

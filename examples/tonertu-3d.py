@@ -8,7 +8,6 @@ x=sympy.Symbol('x')
 y=sympy.Symbol('y')
 z=sympy.Symbol('z')
 
-
 #define field
 ux=sympy.Function('u_x')
 uy=sympy.Function('u_y')
@@ -27,16 +26,22 @@ m=Model(
     ]
 )
 
+# define library
 monoterms=[
     (ux(x,y,z),0),
+
     (uy(x,y,z),0),
+
     (uz(x,y,z),0),
+
     (sympy.diff(ux(x,y,z),x),1),
     (sympy.diff(ux(x,y,z),y),1),
     (sympy.diff(ux(x,y,z),z),1),
+
     (sympy.diff(uy(x,y,z),x),1),
     (sympy.diff(uy(x,y,z),y),1),
     (sympy.diff(uy(x,y,z),z),1),
+
     (sympy.diff(uz(x,y,z),x),1),
     (sympy.diff(uz(x,y,z),y),1),
     (sympy.diff(uz(x,y,z),z),1),
@@ -62,13 +67,6 @@ monoterms=[
     (sympy.diff(uz(x,y,z),y,z),2),
     (sympy.diff(uz(x,y,z),z,2),2),
 ]
-
-
-# 110
-#print(len(listorder(monoterms,0,0,3,1)))
-# 0
-#print(len(listorder(monoterms,0,0,3,1,filter=lambda o,d: False)))
-
 # r => s r
 # t => s^zet t
 # u => s^chi u
@@ -76,10 +74,9 @@ zet=2
 chi=-0.5
 l=Library(m,listorder(monoterms,0,0,4,3,lambda o,d: o*chi-d >= 3*chi-2))
 
+# define transformations
 
-# define transformation
-
-# y axis reflection
+# x reflection
 trrefl=Transformation(m,
     (
         -x,
@@ -92,8 +89,9 @@ trrefl=Transformation(m,
     )
 )
 
+# rotations
 th=sympy.Symbol('th')
-
+# x rotation
 trxrot=Transformation(m,
     (
         x,
@@ -106,7 +104,7 @@ trxrot=Transformation(m,
     ),
     parameter=[th]
 )
-
+# y rotation
 tryrot=Transformation(m,
     (
         sympy.cos(th)*x-sympy.sin(th)*z,
@@ -119,7 +117,7 @@ tryrot=Transformation(m,
     ),
     parameter=[th]
 )
-
+# z rotation
 trzrot=Transformation(m,
     (
         sympy.cos(th)*x+sympy.sin(th)*y,
@@ -133,24 +131,28 @@ trzrot=Transformation(m,
     parameter=[th]
 )
 
+# define LHS
 lhs=[ux(x,y,z),uy(x,y,z),uz(x,y,z)]
+# define LHS library
 lhs_library=Library(m,(ux(x,y,z),uy(x,y,z),uz(x,y,z)))
-#lhs_library=Library(m,(u(x,y),v(x,y)))
 
+# for invariant terms
 #lhs=[sympy.Number(1)]
 #lhs_library=Library(m,(sympy.Number(1),))
 
+# execute alogirithm
 follower=collect_follower(lhs,
     l,
+    # reflection
     Constrainer(trrefl),
-    #Constrainer(trxrot,parameter_fix=[sympy.pi/3,]),
+    # rotation
     Constrainer(trxrot,parameter_fix=[0,],differential=th),
     Constrainer(tryrot,parameter_fix=[0,],differential=th),
     Constrainer(trzrot,parameter_fix=[0,],differential=th),
-    #exptrrot(1),
     lhs_library=lhs_library,
     print_progress=True)
-# print("follower")
+
+# display results
 # display(follower_mat)
 for f in follower:
     display(sympy.Matrix(f))

@@ -7,7 +7,6 @@ from utils import listdorder, listorder
 x=sympy.Symbol('x')
 y=sympy.Symbol('y')
 
-
 #define field
 ux=sympy.Function('u_x')
 uy=sympy.Function('u_y')
@@ -23,11 +22,15 @@ m=Model(
     ]
 )
 
+# define library
 monoterms=[
     (ux(x,y),0),
+
     (uy(x,y),0),
+
     (sympy.diff(ux(x,y),x),1),
     (sympy.diff(ux(x,y),y),1),
+
     (sympy.diff(uy(x,y),x),1),
     (sympy.diff(uy(x,y),y),1),
 
@@ -38,15 +41,7 @@ monoterms=[
     (sympy.diff(uy(x,y),x,2),2),
     (sympy.diff(uy(x,y),x,y),2),
     (sympy.diff(uy(x,y),y,2),2),
-
 ]
-
-
-# 110
-#print(len(listorder(monoterms,0,0,3,1)))
-# 0
-#print(len(listorder(monoterms,0,0,3,1,filter=lambda o,d: False)))
-
 # r => s r
 # t => s^zet t
 # u => s^chi u
@@ -55,10 +50,9 @@ zet=2
 chi=0
 l=Library(m,listorder(monoterms,0,0,3,2,lambda o,d: o*chi-d >= chi-2))
 
+# define transformations
 
-# define transformation
-
-# y axis reflection
+# x reflection
 trrefl=Transformation(m,
     (
         -x,
@@ -69,8 +63,8 @@ trrefl=Transformation(m,
     )
 )
 
+# rotation
 th=sympy.Symbol('th')
-
 trrot=Transformation(m,
     (
         sympy.cos(th)*x+sympy.sin(th)*y,
@@ -82,6 +76,7 @@ trrot=Transformation(m,
     parameter=[th]
 )
 
+# field only rotation
 trfrot=Transformation(m,
     (
         x,
@@ -93,22 +88,27 @@ trfrot=Transformation(m,
     parameter=[th]
 )
 
+# define LHS
 lhs=[ux(x,y),uy(x,y)]
+# define LHS library
 lhs_library=Library(m,(ux(x,y),uy(x,y)))
-#lhs_library=Library(m,(u(x,y),v(x,y)))
 
+# for invariant terms
 #lhs=[sympy.Number(1)]
 #lhs_library=Library(m,(sympy.Number(1),))
 
+# execute alogirithm
 follower=collect_follower(lhs,
     l,
+    # reflection
     Constrainer(trrefl),
+    # rotation
     Constrainer(trrot,parameter_fix=[0,],differential=th),
     #Constrainer(trfrot,parameter_fix=[0,],differential=th),
-    #exptrrot(1),
     lhs_library=lhs_library,
     print_progress=True)
-# print("follower")
+
+# display results
 # display(follower_mat)
 for f in follower:
     display(sympy.Matrix(f))
