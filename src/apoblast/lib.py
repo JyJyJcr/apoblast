@@ -11,6 +11,18 @@ import sympy
 from types import MappingProxyType
 from IPython.display import display
 
+# slience pylance
+from sympy.core.symbol import Symbol as Symbol_sp
+from sympy.core.function import UndefinedFunction as UndefinedFunction_sp
+from sympy.core.function import Function as Function_sp
+from sympy.core.function import AppliedUndef as AppliedUndef_sp
+from sympy.core.function import Derivative as Derivative_sp
+from sympy.core.expr import AtomicExpr as AtomicExpr_sp
+from sympy.core.add import Add as Add_sp
+from sympy.core.mul import Mul as Mul_sp
+from sympy.core.power import Pow as Pow_sp
+
+
 # describe some field system
 # - continuous index -> coordinate
 # - discrete index -> finite dimention vector field
@@ -22,10 +34,10 @@ class Model:
     def __init__(self,coord,field):
         self.coord=tuple(coord)
         self.field=tuple(field)
-        if not all(isinstance(e,sympy.core.symbol.Symbol) for e in self.coord):
+        if not all(isinstance(e,Symbol_sp) for e in self.coord):
             print(self.coord)
             raise TypeError("coord: into<tuple<sympy.core.symbol.Symbol>>")
-        if not all(isinstance(e,sympy.core.function.UndefinedFunction) for e in self.field):
+        if not all(isinstance(e,UndefinedFunction_sp) for e in self.field):
             raise TypeError("field: into<tuple<sympy.core.function.UndefinedFunction>>")
         #self.coord=coord
         #self.field=field
@@ -36,21 +48,21 @@ class Model:
     #     return tuple(self.__applied_field)
 
     def verify(self,expr,with_field=True,parameter=()):
-        if isinstance(expr,sympy.core.expr.AtomicExpr):
-            if isinstance(expr,sympy.core.symbol.Symbol):
+        if isinstance(expr,AtomicExpr_sp):
+            if isinstance(expr,Symbol_sp):
                 return expr in self.coord or expr in parameter
             else:
                 return True
-        elif isinstance(expr,sympy.core.function.Derivative):
+        elif isinstance(expr,Derivative_sp):
             orig,*derivs=expr.args
             return self.verify(orig,with_field,parameter) and all(axis in self.coord for axis,_order in derivs)
-        elif isinstance(expr,sympy.core.function.AppliedUndef):
+        elif isinstance(expr,AppliedUndef_sp):
             return with_field and self.coord==expr.args and (expr.func in self.field)
         elif isinstance(expr,(\
-            sympy.core.function.Function,\
-            sympy.core.add.Add,\
-            sympy.core.mul.Mul,\
-            sympy.core.power.Pow,\
+            Function_sp,\
+            Add_sp,\
+            Mul_sp,\
+            Pow_sp,\
         )):
             return all(self.verify(e,with_field,parameter) for e in expr.args)
         else:
@@ -133,7 +145,7 @@ class Transformation:
         #     raise TypeError("coord_replace: list<[new coord]>")
         # if not isinstance(field_replace,tuple):
         #     raise TypeError("field_replace: list<[new field]>")
-        if not all((isinstance(p,sympy.core.symbol.Symbol) and not (p in model.coord)) for p in parameter):
+        if not all((isinstance(p,Symbol_sp) and not (p in model.coord)) for p in parameter):
             raise TypeError("parameter: list<[fresh]>")
         coord_replace=tuple(map(lambda t: sympy.simplify(t),coord_replace))
         field_replace=tuple(map(lambda t: sympy.simplify(t),field_replace))
@@ -172,16 +184,16 @@ class Transformation:
 
     def apply_internal(self,expr,cache):
         #print(expr,expr.func)
-        if isinstance(expr,sympy.core.expr.AtomicExpr):
+        if isinstance(expr,AtomicExpr_sp):
             # atomic element: coord or const or literal const
-            if isinstance(expr,sympy.core.symbol.Symbol):
+            if isinstance(expr,Symbol_sp):
                 if expr in self.coord_replace_dict:
                     return self.coord_replace_dict[expr]
                 else:
                     raise RuntimeError("Unrecognized coord found: "+expr)
             else:
                 return expr
-        elif isinstance(expr,sympy.core.function.Derivative):
+        elif isinstance(expr,Derivative_sp):
             # derivative
             orig,*internal_deriv,deriv=expr.args
             axis,order=deriv
@@ -200,7 +212,7 @@ class Transformation:
             else:
                 raise RuntimeError("Unrecognized derivative found: "+expr)
 
-        elif isinstance(expr,sympy.core.function.AppliedUndef):
+        elif isinstance(expr,AppliedUndef_sp):
             # field
             #print("field")
             if expr.func in self.field_replace_dict:
@@ -208,10 +220,10 @@ class Transformation:
             else:
                 raise RuntimeError("Unrecognized function symbol found: "+expr)
         elif isinstance(expr,(\
-            sympy.core.function.Function,\
-            sympy.core.add.Add,\
-            sympy.core.mul.Mul,\
-            sympy.core.power.Pow,\
+            Function_sp,\
+            Add_sp,\
+            Mul_sp,\
+            Pow_sp,\
         )):
             # other all single point function
             #print("normal func")
