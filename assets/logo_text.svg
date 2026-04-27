@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="45" viewBox="-100 -20 200 45">
+    <style>
+        .green {
+            fill: #30c810;
+        }
+
+        .serif {
+            font-family: Georgia;
+        }
+
+        .italic {
+            font-style: italic;
+        }
+
+        #abbreviation {
+            font-size: 37px;
+        }
+
+        #full-name {
+            font-size: 6.5px;
+        }
+    </style>
+    <g transform="translate(-45 0)">
+        <text x="140" y="10" stroke="none" text-anchor="end" id="abbreviation" class="serif green">APOBLAST</text>
+        <text x="138" y="20" stroke="none" text-anchor="end" id="full-name" class="serif green">
+            <tspan class="italic">A Priori</tspan>
+            Operator-Based Linear Algorithm for Symmetric Terms
+        </text>
+    </g>
+</svg>
