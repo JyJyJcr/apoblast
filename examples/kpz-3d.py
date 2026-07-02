@@ -3,6 +3,10 @@ from apoblast import Model, Library, Transformation, Constrainer, collect_follow
 from IPython.display import display
 from utils import listdorder, listorder
 
+import logging
+
+logging.basicConfig(level=logging.INFO)
+
 # define coordinate
 x = sympy.Symbol("x")
 y = sympy.Symbol("y")
@@ -248,7 +252,6 @@ follower = collect_follower(
     # Constrainer(trtilt,parameter_fix=[0,0,0,1,],differential=ey), # = x tilt + rotation
     # Constrainer(trtilt,parameter_fix=[0,0,0,1,],differential=ez), # = x tilt + rotation
     lhs_library=lhs_library,
-    print_progress=True,
 )
 
 # display results

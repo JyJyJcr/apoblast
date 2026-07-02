@@ -9,7 +9,7 @@
 # sys.modules['sympy.mpmath'] = mpmath
 import sympy
 from types import MappingProxyType
-from IPython.display import display
+import logging
 
 # slience pylance
 from sympy.core.symbol import Symbol as Symbol_sp
@@ -22,6 +22,7 @@ from sympy.core.add import Add as Add_sp
 from sympy.core.mul import Mul as Mul_sp
 from sympy.core.power import Pow as Pow_sp
 
+logger = logging.getLogger(__name__)
 
 # describe some field system
 # - continuous index -> coordinate
@@ -73,6 +74,9 @@ class Model:
             return all(self.verify(e, with_field, parameter) for e in expr.args)
         else:
             return False
+
+    def __repr__(self):
+        return f"Model(coord={self.coord}, field={self.field})"
 
 
 # stock valid terms with a specific model
@@ -270,6 +274,17 @@ class Transformation:
         else:
             raise RuntimeError("Unrecognized func found: " + expr)
 
+    def __repr__(self):
+        coord_replace_str = ""
+        for c_old, c_new in zip(self.model.coord, self.coord_replace):
+            coord_replace_str += str(c_old) + " |-> " + str(c_new) + ", "
+
+        field_replace_str = ""
+        for f_old, f_new in zip(self.model.field, self.field_replace):
+            field_replace_str += str(f_old) + " |-> " + str(f_new) + ", "
+
+        return f"Transformation(coord_replace=[{coord_replace_str[:-2]}], field_replace=[{field_replace_str[:-2]}], parameter={self.parameter})"
+
 
 class Constrainer:
     # library
@@ -282,6 +297,9 @@ class Constrainer:
         self.transformation = transformation
         self.parameter_fix = parameter_fix
         self.differential = differential
+
+    def __repr__(self):
+        return f"Constrainer(transformation={self.transformation}, parameter_fix={self.parameter_fix}, differential={self.differential})"
 
 
 # expression of transformation in a specific library
@@ -510,7 +528,6 @@ def collect_follower_raw(
     library,
     *trans,
     lhs_library=None,
-    print_progress=False,
     nullspace_finder=find_nulls,
 ):
     if lhs_library == None:
@@ -524,9 +541,10 @@ def collect_follower_raw(
         raise RuntimeError("field " + str(lhs) + " is not expressible in the library")
 
     kernel_matrix = sympy.eye(m * a)
-    if print_progress:
-        print("initial kernel dim: " + str(m * a))
-        print("initial library dim: " + str(a))
+    logger.info("initial:")
+
+    logger.info("  kernel dim: " + str(m * a))
+    logger.info("  library dim: " + str(a))
 
     dynex = set()
 
@@ -540,16 +558,15 @@ def collect_follower_raw(
 
         # debug
         t = trans[step]
-        if print_progress:
-            print("stage " + str(step) + ": " + str(t))
+        logger.info("stage " + str(step) + ":")
+        logger.debug("  constrainer: " + str(t))
 
         ltm = ConstraintMatrix(lhs_library, t)
         if library == lhs_library:
             tm = ltm
         else:
             tm = ConstraintMatrix(library, t)
-        if print_progress:
-            print("  transformation linearized")
+        logger.debug("  transformation linearized")
 
         # L d = 0
         ltme = ltm.exmat
@@ -558,6 +575,7 @@ def collect_follower_raw(
             if lhsm * ltme != sympy.zeros(m, lexl):
                 print(ltm.exmat_key)
                 raise RuntimeError("lhs should not have excluded terms")
+        logger.debug("  excluded terms checked")
 
         # collect all condition
         cond = []
@@ -601,19 +619,17 @@ def collect_follower_raw(
                             else:
                                 arr.append(0)
                     cond.append(arr)
-            if print_progress:
-                print("  excluded terms:")
-                for f in tm.exmat_key:
-                    if f not in dynex:
-                        display(f)
+
+            logger.debug("  excluded terms:")
+            for f in tm.exmat_key:
+                if f not in dynex:
+                    logger.info(f)
 
         cond = sympy.Matrix(cond)
 
-        if print_progress:
-            print("  condition collected")
+        logger.debug("  condition collected")
         kermat = sympy.simplify(cond * kernel_matrix)
-        if print_progress:
-            print("  condition simplifyed")
+        logger.debug("  condition simplified")
 
         nullmat = nullspace_finder(kermat)
         kernel_matrix = kernel_matrix * nullmat
@@ -651,12 +667,10 @@ def collect_follower_raw(
 
         kernel_matrix = kernel_matrix.extract(kernnr, range(n))
 
-        if print_progress:
-            print("  library shrinked")
+        logger.debug("  library shrinked")
 
-        if print_progress:
-            print("  kernel dim: " + str(n))
-            print("  library dim: " + str(a))
+        logger.info("  kernel dim: " + str(n))
+        logger.info("  library dim: " + str(a))
 
         # print("new")
         # display(kernel_matrix)
@@ -675,7 +689,6 @@ def collect_follower(
     library,
     *trans,
     lhs_library=None,
-    print_progress=False,
     nullspace_finder=find_nulls,
 ):
     d = len(lhs)
@@ -684,7 +697,6 @@ def collect_follower(
         library,
         *trans,
         lhs_library=lhs_library,
-        print_progress=print_progress,
         nullspace_finder=nullspace_finder,
     )
     R = len(library.term)

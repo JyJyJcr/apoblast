@@ -2,6 +2,10 @@ import sympy
 from apoblast import Model, Library, Transformation, Constrainer, collect_follower
 from IPython.display import display
 
+import logging
+
+logging.basicConfig(level=logging.INFO)
+
 # define coordinate
 x = sympy.Symbol("x")
 y = sympy.Symbol("y")
@@ -131,7 +135,6 @@ follower = collect_follower(
     # Constrainer(trrot_free,parameter_fix=[sympy.pi/5*2,]), # modern way
     # Constrainer(trrot(1)), # old way to express cotinuous rotation
     lhs_library=lhs_library,
-    print_progress=True,
 )
 
 # display results
