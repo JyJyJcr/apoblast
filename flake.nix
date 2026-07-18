@@ -9,16 +9,40 @@
     };
   };
 
-  outputs = { nixpkgs, flake-utils, nix-jyjyjcr, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      nixpkgs,
+      flake-utils,
+      nix-jyjyjcr,
+      ...
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = import nixpkgs {
           inherit system;
+          config.allowUnfreePredicate =
+            pkg:
+            builtins.elem (nixpkgs.lib.getName pkg) [
+              "corefonts"
+            ];
+        };
+        apoblast-logo = pkgs.callPackage ./assets/logo.nix { };
+
+        pkgs-dev = import nixpkgs {
+          inherit system;
           overlays = [ nix-jyjyjcr.overlays.default ];
         };
-      in {
-        devShells = pkgs.alt-shell.mkCommonShells { } {
-          packages = [ pkgs.uv pkgs.python313 ];
+      in
+      {
+        packages.apoblast-logo = apoblast-logo;
+
+        devShells = pkgs-dev.alt-shell.mkCommonShells { } {
+          packages = [
+            pkgs-dev.uv
+            pkgs-dev.python313
+          ];
         };
-      });
+      }
+    );
 }
