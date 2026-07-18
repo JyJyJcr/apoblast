@@ -16,7 +16,7 @@
       nix-jyjyjcr,
       ...
     }:
-    flake-utils.lib.eachDefaultSystem (
+    (flake-utils.lib.eachDefaultSystem (
       system:
       let
         pkgs = import nixpkgs {
@@ -44,5 +44,10 @@
           ];
         };
       }
-    );
+    ))
+    // {
+      overlays.default = final: prev: {
+        apoblast-logo = prev.callPackage ./assets/logo.nix { };
+      };
+    };
 }
